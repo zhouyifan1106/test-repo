@@ -2,19 +2,15 @@
 title: "STATS 415 Lab 01"
 author: "Brook Luers, Ailun Huang, and Yvonne Zhou"
 date: "January 17, 2020"
-header-includes:
-  - \usepackage{float}
-  - \usepackage{hyperref}
-  - \hypersetup{breaklinks,colorlinks,allcolors=blue,pdfpagemode=UseNone}
 output:
- pdf_document:
- toc: TRUE
-# output:
-#   html_document:
-#     toc: TRUE
-#     toc_depth: 2
-#     toc_float: TRUE
-#     theme: lumen
+  pdf_document: null
+  html_document:
+    df_print: paged
+  toc: yes
+header-includes:
+- \usepackage{float}
+- \usepackage{hyperref}
+- \hypersetup{breaklinks,colorlinks,allcolors=blue,pdfpagemode=UseNone}
 ---
 
 ```{r setup, include=FALSE}
@@ -26,7 +22,8 @@ Partially adapted from <http://www-bcf.usc.edu/~gareth/ISL/Chapter%202%20Lab.txt
 # Today's Objectives
   1. Discuss and become familiar with basic programming in R.
   2. Provide a reference for some commonly-used functions and data structures
-  3. Introducing R Markdown for typing/formatting reports.
+  3. Introduce R Markdown for typing/formatting reports.
+  4. Exploratory Data Analysis (EDA) for real datasets
 
 # Getting Started with R
 > "R is the *lingua franca* of data science"
@@ -177,6 +174,7 @@ A[-c(1, 3), ]
 ```
 * You can access the entire row/column by leaving the corresponding indices empty.
 * Using the `-` before indices to access elements besides that row/column.
+
 **Question:** How do we access the element in the 2nd row and 4th column of A?
 \vspace{2cm}
 
@@ -227,44 +225,6 @@ names(a)
 names(a) = c('a','b','c','d','e')
 names(a)
 ```
-
-## Working with Dataframe
-Now that we have some basics of how R works, let's start looking at what real data looks like. A `data.frame` is the basic 2-dimensional table of data that R expects to see and analyze. R includes a sample data as `iris` for information about iris flowers.
-
-Like general tables, the R `data.frame` stores each variable in a column, while each row represents an observation. We can see the first (last) few rows using the head (tail) function. The second option specfies the number of rows.
-```{r}
-head(iris,4)
-```
-
-Let's get some more information about our dataset, `iris`. 
-```{r}
-dim(iris) # Get the size of Iris
-names(iris) # Get the column (variable) names
-summary(iris) 
-```
-* Note each column (variable) should be of same type. 
-
-We can get a compact view of the structure of an object.
-```{r}
-str(iris) 
-```
- 
-Similar to lists, we can use the `$` operator to access specific variables in this data frame. Each variable itself is stored as a vector.
-```{r}
-head(iris$Species)
-iris$Species[1:4]
-```
-Alternatively, we can use indices like we did with matrices. This time, the columns have names, so we can use them rather than a numeric index. 
-```{r}
-iris[15:20, "Species"]
-```
-
-We can also create our own data frame by supporing `column name = vector,` ...
-```{r}
-A = data.frame(x = 1, y = c(1,2,3), z = c('U','O','M'))
-A
-```
-
 
 # Other concepts in R
 ## Assignment operators
@@ -409,7 +369,6 @@ The code itself goes in between.
 <pre><code>```{r}
 print('hello world')
 ```</code></pre>
-```
 
 ```{r}
 print('hello world')
@@ -458,3 +417,77 @@ e^{i \pi} = -1
 * An alternative more advanced tutorial
 <http://www.stat.cmu.edu/~cshalizi/rmarkdown/#math-in-r-markdown>
 
+# Exploratory Data Analysis
+
+Now that we have some basics of how R works, let's start looking at what real data looks like. A `data.frame` is the basic 2-dimensional table of data that R expects to see and analyze. We'll use the `Boston` dataset available in the `MASS` package. This dataset contains information on housing values for 506 neighborhoods near Boston. First install the MASS package.
+```{r installMASS, eval = FALSE}
+install.packages("MASS")
+```
+Now, we'll load the package and the dataset.
+```{r loadBoston}
+library(MASS)
+data(Boston)
+```
+Since this dataset is from a package, we can use `?Boston` or `help(Boston)` to get information about the variables in the dataset.
+
+Like general tables, the R `data.frame` stores each variable in a column, while each row represents an observation. We can see the first (last) few rows using the head (tail) function. The second option specfies the number of rows.
+```{r}
+head(Boston,4)
+```
+
+Let's get some more information about our dataset, `Boston`. 
+```{r}
+dim(Boston) # Get the size of Boston
+names(Boston) # Get the column (variable) names
+summary(Boston) 
+```
+* Note each column (variable) should be of same type. 
+
+We can get a compact view of the structure of an object.
+```{r}
+str(Boston) 
+```
+ 
+Similar to lists, we can use the `$` operator to access specific variables in this data frame. Each variable itself is stored as a vector.
+```{r}
+head(Boston$age)
+Boston$age[1:4]
+```
+Alternatively, we can use indices like we did with matrices. This time, the columns have names, so we can use them rather than a numeric index. 
+```{r}
+Boston[15:20, "age"]
+```
+
+We can also create our own data frame by supporing `column name = vector,` ...
+```{r}
+A = data.frame(x = 1, y = c(1,2,3), z = c('U','O','M'))
+A
+```
+
+## Data Visulization
+Let's look at a scatterplot matrix of a few continuous variables in `Boston`.
+```{r bostonPairs, fig.width=6, fig.height=5}
+pairs(Boston[, c("medv", "rm", "lstat", "age", "crim")],
+      main = "Scatterplot matrix for variables in Boston dataset")
+```
+
+**Question:** What can we say about the relationship between `medv` and `lstat`? Do you expect `lstat` to be a good predictor of `medv`?
+
+Now, let's do some graphical summaries of the variable `crim`.
+```{r graphical_crim,fig.width=6, fig.height=4}
+# Histogram
+hist(Boston$crim, breaks = 15, 
+     main = "Histogram of per Capita Crime Rate by Town")
+# Boxplot, with all data points
+boxplot(Boston$crim,
+      main = "Boxplot of per Capita Crime Rate by Town")
+# Boxplot, outlier removed
+boxplot(Boston$crim,outline = FALSE,
+      main = "Boxplot of per Capita Crime Rate by Town (outlier removed)")
+```
+## Common visulization functions and packages
+**plot()** for scatterplot, **barplot()** for barplot, **hist()** for histogram, **boxplot()** for boxplot. These functions are all in the "base" package, so no package installation is required.
+
+For more advanced visualization, consider packages such as **ggplot2** and **plotly** (interactive-based).
+
+ggplot2: https://ggplot2.tidyverse.org/
