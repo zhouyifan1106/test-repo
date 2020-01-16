@@ -1,0 +1,460 @@
+---
+title: "STATS 415 Lab 01"
+author: "Brook Luers, Ailun Huang, and Yvonne Zhou"
+date: "January 17, 2020"
+header-includes:
+  - \usepackage{float}
+  - \usepackage{hyperref}
+  - \hypersetup{breaklinks,colorlinks,allcolors=blue,pdfpagemode=UseNone}
+output:
+ pdf_document:
+ toc: TRUE
+# output:
+#   html_document:
+#     toc: TRUE
+#     toc_depth: 2
+#     toc_float: TRUE
+#     theme: lumen
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, fig.height = 3, fig.width = 5, fig.align = "center", fig.pos = "H")
+```
+
+Partially adapted from <http://www-bcf.usc.edu/~gareth/ISL/Chapter%202%20Lab.txt> and Section 2.3 in *An Introduction to Statistical Learning* (ISL).
+
+# Today's Objectives
+  1. Discuss and become familiar with basic programming in R.
+  2. Provide a reference for some commonly-used functions and data structures
+  3. Introducing R Markdown for typing/formatting reports.
+
+# Getting Started with R
+> "R is the *lingua franca* of data science"
+\begin{flushright}
+  -\href{http://blog.revolutionanalytics.com/2013/11/the-rise-of-r-as-the-language-of-analytics.html}{http://blog.revolutionanalytics.com/2013/11/the-rise-of-r-as-the-language-of-analytics.html}
+\end{flushright}
+
+In the mean time, RStudio is by far the most popular IDE for developing R programs. It is more flexible and powerful compared to R itself. You can just use R without RStudio for some relatively simple tasks, but I strongly recommend that everyone should try to use RStudio for data analysis. 
+
+For those with personal computers, you can find a help file 'R_setup.pdf' on Canvas for downloading R as well as RStudio. Also, R and RStudio should both be installed on any University computer.
+
+# Basic R Commands
+In R, you don't have to declare variable types before using them.
+```{r}
+x = 3
+y = 0.5
+print(x + y)
+```
+It is typically not necessary to use the `print` functions
+```{r}
+x + y
+```
+Other operators also work as expected
+```{r}
+x * y
+x^y
+x%%y ## x mod y
+```
+
+R has the capability of handling error and overflow:
+```{r}
+x / 0
+sqrt(-x)
+```
+
+Strings may be delimited with either type of quote, while concatenation uses the 'paste()' function. 
+```{r}
+s1 = 'Stats 415'
+s2 = "is an interesting class!"
+paste(s1,s2)
+```
+* Note there is a space added in between the two strings automatically.
+
+Conversion between string and numbers is easy:
+```{r}
+s = '415'
+n = 415
+as.numeric(s)
+as.character(n)
+```
+
+
+
+# Data Structures
+
+## Vectors
+Vectors are one of the most basic data structure in R. It stores elements of the __same__ elements with index starting from 1.
+```{r}
+# Create a vector called x containing the elements 1, 3, 2, 5, in that order
+x = c(1, 3, 2, 5)
+x[3] # The third element
+y = c('S','T','A','T','S')
+y[1:4] # The first through fourth element
+z = c(x,y) # Concatenating two vectors
+z # z is still a vector
+```
+* `c()` is the "combine" function: it combines the elements you give it into a single (column) vector.
+* Note a vector of characters (e.g. `y`) is different from a string.
+* Accessing elements in a vector with single brackets.
+* The elements should be of same type. Otherwise they will be coerced to a same type.
+
+
+There are efficient ways of creating a numeric vector:
+```{r} 
+x = 1:10 # Increment by 1
+x
+y = seq(10, 1, by = -0.8) # Increment by -0.8, not necessarily include the right end
+y
+z = rep(1,10) ## Replicate 1 by 5 times.
+z
+```
+* `seq` function constructs a vector with certain pattern.
+* Get help about a function by typing a `?` before the function name (or use the `help()` function). In this case `?seq` gives the documentation for that function.
+
+
+Common operations on vectors:
+```{r} 
+length(x)
+x + z
+x^2
+```
+
+* `length()` gives the number of elements of a vector
+* Note that basic operations on vectors (`+`,`-`,`*`,`\`,`^`) are *component-wise*. To use these operations on vectors, they __should__ be of the same length!
+
+
+
+## Matrices
+Matrices are two-dimensional generalization of vectors. 
+```{r}
+x = matrix(data = c(1, 2, 3, 4), nrow = 2, ncol = 2)  
+x
+x = matrix(c(1, 2, 3, 4), 2, 2)
+x
+```
+* Provide data to the function `matrix()` in a vector (created using `c()`)
+* You must specify either the number of rows (`nrow`) or columns (`ncol`) or both
+* For R functions, you can support the name of each argument for a better readability.
+* If the arguments are given in the correct order (see the `help` for the function), you don't need support names for them.
+
+There are arguments that is set by default if you do not provide them. Here by default, the argument `byrow = FALSE`, which means R stores the elements in the `data` vector as __columns__ first. You can go row-wise by manually setting `byrow = TRUE`
+```{r}
+matrix(c(1, 2, 3, 4), 2, 2, byrow = TRUE)
+```
+
+
+```{r}
+sqrt(x)
+x^2
+t(x)
+```
+* Like with vectors, basic operations on matrices are *component-wise*!
+* The function 't()' gives the transpose to a matrix
+
+There are efficient ways of manipulating matrices
+```{r}
+D = diag(1,2) # Create a 3 by 3 diagonal matrix with 1's
+D
+cbind(x,D) ## Concatenating on column
+rbind(x,D) ## Concatenating on row
+```
+
+
+Accessing element in matrices are just like vectors.
+```{r} 
+A = matrix(1:16, 4, 4)
+A
+A[2, 3] # access the element in the 2nd row and 3rd column of A
+A[c(1, 3), c(2, 4)]
+A[1:3, 2:4]
+```
+* Notice that in the output, it is a new matrix whose rows and columns are NOT numbered as in the original `A` matrix. 
+
+```{r}
+A[1:2, ] 
+A[, 1:2]
+A[-c(1, 3), ]
+```
+* You can access the entire row/column by leaving the corresponding indices empty.
+* Using the `-` before indices to access elements besides that row/column.
+**Question:** How do we access the element in the 2nd row and 4th column of A?
+\vspace{2cm}
+
+
+## Lists
+R uses a list to represent free-form collections of disparate information. The elements can be named, and may be of different data types.
+```{r}
+a = list() ## Creating an empty list
+a[[1]] = 'b'
+a[[2]] = 2:7
+a[[3]] = 5
+a[[4]] = list()
+a
+```
+* A list can contain any type of elements, even a list inside a list.
+
+
+Double bracket `a[[2]]` can access the element itself, while single bracket `a[2]` gives a list.
+```{r}
+length(a[2])
+length(a[[2]])
+```
+
+What if we pass a vector of numbers? `a[c(2,3)]` vs `a[[c(1,2)]]`
+```{r}
+a[c(2,3)]
+a[[c(2,3)]]
+```
+* If you pass a vector of numbers within __single__ bracket, it will give a sub-list with the corresponding elements.
+* If you pass a vector of numbers within __double__ bracket, it will move down layers in the list, i.e. the third element of the second element in `a` (which is a vector `2:7`)
+
+We can delete an element by setting it to `NULL`
+```{r}
+a[[4]] = NULL
+```
+
+We can also assign names to some of the elements. Then we can access the element by calling its name using a `$` or double bracket.
+```{r}
+a[['my.name']] = 'Ailun'
+a$my.section = 3
+a$my.name
+a[['my.section']]
+```
+
+To access and change the names for a list, we can use `names()` function.
+```{r}
+names(a)
+names(a) = c('a','b','c','d','e')
+names(a)
+```
+
+## Working with Dataframe
+Now that we have some basics of how R works, let's start looking at what real data looks like. A `data.frame` is the basic 2-dimensional table of data that R expects to see and analyze. R includes a sample data as `iris` for information about iris flowers.
+
+Like general tables, the R `data.frame` stores each variable in a column, while each row represents an observation. We can see the first (last) few rows using the head (tail) function. The second option specfies the number of rows.
+```{r}
+head(iris,4)
+```
+
+Let's get some more information about our dataset, `iris`. 
+```{r}
+dim(iris) # Get the size of Iris
+names(iris) # Get the column (variable) names
+summary(iris) 
+```
+* Note each column (variable) should be of same type. 
+
+We can get a compact view of the structure of an object.
+```{r}
+str(iris) 
+```
+ 
+Similar to lists, we can use the `$` operator to access specific variables in this data frame. Each variable itself is stored as a vector.
+```{r}
+head(iris$Species)
+iris$Species[1:4]
+```
+Alternatively, we can use indices like we did with matrices. This time, the columns have names, so we can use them rather than a numeric index. 
+```{r}
+iris[15:20, "Species"]
+```
+
+We can also create our own data frame by supporing `column name = vector,` ...
+```{r}
+A = data.frame(x = 1, y = c(1,2,3), z = c('U','O','M'))
+A
+```
+
+
+# Other concepts in R
+## Assignment operators
+There are two ways of assigning values to a variable, which are mostly equivalent.
+```{r}
+a = 3
+b <- 3
+```
+* Besides `=`, the operator `<-` can also be used as the assignment operator. It stores the value on the right side as the variable name on the left. (`->` can be used to store the value on the left as the variable name on the right, but it's not used very often)
+* There are some cases where we __must__ use `<-`. However,  we need to beware of misinterpretations in general.
+
+Consider the following case where we want to compare `a` with `-b`
+```{r}
+a = 3
+b = -4
+print(a<-b)
+```
+* It's neither TRUE nor FALSE, why?
+```{r}
+a = 3
+b = -4
+print(a < -b)
+print(a <(-b) )
+```
+
+
+## `if` and `for` statements
+```{r}
+if (4 < 3){
+  print('4 < 3')
+} else {
+  print('4 >= 3')
+}
+```
+* There is not necessarily an `else` statement.
+* For multiple alternatives, use `else if` in place of `else`.
+
+```{r}
+for (i in 1:10){
+  print(i)
+}
+for (j in c('S','T','A','T','S')){
+  print(j)
+}
+```
+* The for loop runs once for __each element__ (not necessarily numbers) in a given vector. Within each run, the variable (i/j in this case) is set to equal that value.
+
+
+## Random number generators
+```{r}
+x = rnorm(50) # Generate 50 independent observations from a standard normal distribution
+y = rnorm(50, mean = 1, sd = 1) # Generate 50 independent observations from N(1,1)
+z = sample(1:10, size = 3)
+```
+* There are efficient ways of generating i.i.d. realizations from a large variety of distributions. Fortunately they all operate in a similar manner.
+* Note for the Gaussian/Normal case, we are specifying the standard deviation, not the variance.
+* The `sample()` function takes a __random__ sample of the specified `size` from a given vector (1:10 in this case).  The default option is to sample with no replacement. 
+
+"Sometimes we want our code to generate the *exact* same set of random numbers" (ISL, p. 45). Often this is because we don't want the results to change every time we run the code (e.g., in simulation experiments). We can set the "seed" of the random number generator so that the same values are produced every time.
+```{r}
+set.seed(1997) # for reproducibility
+```
+
+Now let's look at some basic functions for summary statistics 
+```{r}
+y = rnorm(100)
+max(y)
+mean(y)
+var(y)
+sqrt(var(y))
+sd(y)
+```
+
+# Importing packages
+
+One of the major advantages in R is its massive free-to-use packages. One R package is a collection of functions and data sets developed by others. Those packages greatly increase the power of R, in the sense that you don’t have to do everything from scratch. Most of the methods we are going to cover in this class has a package that efficiently implements them.
+
+To install a package, you'll just have to type in `install.packages('package name')`. Note the quotation mark, and the case must match.
+
+```{r eval=FALSE}
+install.packages('ISLR')
+```
+
+Then you can use the function and datasets in the package, with a prefix and `::`. For instance, this package includes a data frame called `Auto`.
+
+```{r}
+head(ISLR::Auto)
+```
+
+You can avoid the prefix by using the `library()` function:
+
+```{r}
+library(ISLR)
+head(Auto)
+```
+
+* There is a risk of namespace collisions for using this convenient `library()`. What if we named one of our own variable as `Auto` before?
+
+# RMarkdown
+RMarkdown is a great, fairly easy way to merge data analysis and report-writing, by letting you write R code inside a document. This helps with reproducibility, too!
+
+Actually, this whole lab was written in RMarkdown. We can see how it works by going through the source code for the document, which was distributed to you as a file called `Lab01.Rmd`.
+
+You'll just have to hit `Knit` on the top to make a pdf/html file.
+
+## Basic Formatting in R Markdown
+
+For the most part, text is just text. You can just type as you ordinarily would.
+
+### Paragraph Breaks and Forced Line Breaks
+
+To insert a break between paragraphs, include a single completely blank line.
+
+To force a line break without starting a new paragragh, put __two__ blank  
+spaces at the end of a line.
+
+```
+To insert a break between paragraphs, include a single completely blank line.
+
+To force a line break, put _two_ blank  
+spaces at the end of a line.
+```
+
+### Headers
+
+The character `#` at the beginning of a line means this line is a section header. The number of `#`s indicates whether it is for section, sub-section,
+sub-sub-section, etc. 
+
+
+### Bullet Lists
+* Each item in the list starts with a `*` (asterisk) character, or a single dash (`-`).
+* Each item begins on a new line.
+
+
+## Including Code
+The major advantage of using R Markdown is its capability of including your code in place. It can also run the code when your document is sourced, and then display the results in your document. There are two major ways, code **chunks** and **inline** code.
+
+### Code Chunks and Their Results
+A code **chunk** is simply a piece of R code.  It is preceded by ` ```{r}` on a line by itself, and ended by a line which just says ` ``` `.
+The code itself goes in between.
+
+<pre><code>```{r}
+print('hello world')
+```</code></pre>
+```
+
+```{r}
+print('hello world')
+```
+
+* The chunk of code is included just in place of the document.
+* The output of the code is also automatically included in the document. There are options to aviod displaying the results.
+
+
+### Inline Code
+
+Code output can also be incorporated into the text, using **inline
+code**.  This is code not set off on a line by itself, but beginning with
+` `r ` and ending with ` ` `. You can use this to access the variables in line. Notice that inline code does __not__ display the codes, just their output.
+
+* One thing to keep in mind: R studio keeps two environments or workspaces. One is the "usual" environment (**Global Environment**) of the console to evaluate your code. It is shared across opened files on your RStudio. For the other one, every time you `Knit` a R Markdown file, it creates a clean workspace.
+
+## Include math
+
+R Markdown can also handle formatting mathematical formulas in a way similar to LaTex. The math can either be inline or in display mode.
+
+Inline math is surrounded with a pair of dollar
+signs (`$`), as $\pi r^2$ or $e^{i\pi}$.
+
+```
+$\pi r^2$ or $e^{i\pi}$.
+```
+
+Mathematical displays are marked off with `\[` and `\]`, as in
+\[
+e^{i \pi} = -1
+\]
+
+```
+\[
+e^{i \pi} = -1
+\]
+```
+
+
+## Other Resources for RMarkdown
+
+* Introduction and tutorial: <http://rmarkdown.rstudio.com/lesson-1.html>
+* Cheatsheet: <https://www.rstudio.com/wp-content/uploads/2016/03/rmarkdown-cheatsheet-2.0.pdf>
+* Reference Guide: <https://www.rstudio.com/wp-content/uploads/2015/03/rmarkdown-reference.pdf>
+* An alternative more advanced tutorial
+<http://www.stat.cmu.edu/~cshalizi/rmarkdown/#math-in-r-markdown>
+
